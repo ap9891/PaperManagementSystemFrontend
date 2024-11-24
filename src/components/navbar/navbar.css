@@ -1,0 +1,85 @@
+/* Dashboard.css */
+
+/* Top Navigation */
+.navbar {
+    position: fixed;   /* Ensures the navbar stays on top */
+    top: 0;
+    left: 0;
+    width: 100%; 
+    background-color: #070708; /* Indigo-600 */
+    color: white;
+    padding: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* width: 108rem; */
+    z-index: 10;
+  }
+  
+  .navbar a {
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    color: #dfd6d6;
+    text-decoration: none;
+  }
+  
+  .navbar a:hover {
+    background-color: #f6f6f9; 
+    color: #333333;
+  }
+  
+  .navbar a.active {
+    background-color: #6b6a71;
+  }
+  
+  /* Main Content */
+  .main-content {
+    background-color: #fefefe;
+    min-height: calc(100vh - 64px);
+    padding: 40px;
+  }
+  
+  /* Date Display */
+  .date-display {
+    background-color: #e5e7eb; /* Gray-200 */
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #4b5563; /* Gray-600 */
+    font-size: 14px;
+  }
+  
+  /* Title */
+  .main-title {
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    color: #374151; /* Gray-700 */
+    margin: 40px 0;
+  }
+  
+  /* Buttons Grid */
+  .buttons-grid {
+    max-width: 1024px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    margin-top: 48px;
+  }
+  
+  .buttons-grid a {
+    background-color: #4f46e5; /* Indigo-500 */
+    color: white;
+    padding: 24px;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+  
+  .buttons-grid a:hover {
+    background-color: #4338ca; /* Indigo-600 */
+    transform: scale(1.05);
+  }
+  
