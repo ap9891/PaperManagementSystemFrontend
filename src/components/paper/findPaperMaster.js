@@ -1,98 +1,109 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import axios from 'axios';
 import './paperMaster.css';
-// import Navigation from '../navbar/Navbar';
 import NavigationPaper from '../navbar/NavbarPaper';
 
+// Base URL for API calls
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:9090/api/paper-master';
+
 const PaperMasterForm = ({ onSave, lastPartNumber, initialData, isEditing, onUpdate, onCancel }) => {
-    const initialFormState = {
+    const initialFormState = useMemo(() => ({
         type: 'K',
         reelSize: '',
         gsm: '',
         bf: '',
         partNumber: (lastPartNumber + 1).toString(),
         partName: ''
-      };
+    }), [lastPartNumber]);
     
     const [formData, setFormData] = useState(initialFormState);
     const [errors, setErrors] = useState({});
-    React.useEffect(() => {
+
+    useEffect(() => {
         if (isEditing && initialData) {
-          setFormData(initialData);
+            setFormData(initialData);
         } else {
-          setFormData(initialFormState);
+            setFormData(initialFormState);
         }
-      }, [isEditing, initialData, lastPartNumber]);
+    }, [isEditing, initialData, initialFormState]);
 
-  const validateField = (name, value) => {
-    const newErrors = { ...errors };
+    const validateField = (name, value) => {
+        const newErrors = { ...errors };
 
-    switch (name) {
-      case 'reelSize':
-        if (value && (isNaN(value) || value < 1 || value > 100)) {
-          newErrors[name] = 'Reel size must be between 1 and 100';
-        } else {
-          delete newErrors[name];
+        switch (name) {
+            case 'reelSize':
+                if (value && (isNaN(value) || value < 1 || value > 100)) {
+                    newErrors[name] = 'Reel size must be between 1 and 100';
+                } else {
+                    delete newErrors[name];
+                }
+                break;
+            case 'gsm':
+                if (value && (isNaN(value) || value < 1 || value > 1000)) {
+                    newErrors[name] = 'GSM must be between 1 and 1000';
+                } else {
+                    delete newErrors[name];
+                }
+                break;
+            case 'bf':
+                if (value && (isNaN(value) || value < 1 || value > 1000)) {
+                    newErrors[name] = 'BF must be between 1 and 1000';
+                } else {
+                    delete newErrors[name];
+                }
+                break;
+            default:
+                break;
         }
-        break;
-      case 'gsm':
-        if (value && (isNaN(value) || value < 1 || value > 1000)) {
-          newErrors[name] = 'GSM must be between 1 and 1000';
-        } else {
-          delete newErrors[name];
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+
+            if (name === 'reelSize' || name === 'gsm' || name === 'bf') {
+                if (newData.reelSize && newData.gsm && newData.bf) {
+                    newData.partName = `${newData.reelSize}/${newData.gsm}/${newData.bf}`;
+                }
+            }
+
+            return newData;
+        });
+        validateField(name, value);
+    };
+
+    const handleSave = async () => {
+        const isValid = ['reelSize', 'gsm', 'bf'].every(field =>
+            validateField(field, formData[field])
+        );
+
+        if (isValid) {
+            try {
+                if (isEditing) {
+                    const response = await axios.put(`${API_BASE_URL}/${formData.id}`, formData);
+                    onUpdate(response.data);
+                } else {
+                    const response = await axios.post(API_BASE_URL, formData);
+                    onSave(response.data);
+                }
+                alert(`Paper Master ${isEditing ? 'updated' : 'saved'} successfully!`);
+                onCancel();
+            } catch (error) {
+                alert(`Error ${isEditing ? 'updating' : 'saving'} Paper Master: ${error.response?.data?.message || error.message}`);
+            }
         }
-        break;
-      case 'bf':
-        if (value && (isNaN(value) || value < 1 || value > 1000)) {
-          newErrors[name] = 'BF must be between 1 and 1000';
-        } else {
-          delete newErrors[name];
-        }
-        break;
-      default:
-        break;
-    }
+    };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    const handleCancel = () => {
+        setFormData(initialFormState);
+        setErrors({});
+        onCancel();
+    };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => {
-      const newData = { ...prev, [name]: value };
-
-      if (name === 'reelSize' || name === 'gsm' || name === 'bf') {
-        if (newData.reelSize && newData.gsm && newData.bf) {
-          newData.partName = `${newData.reelSize}/${newData.gsm}/${newData.bf}`;
-        }
-      }
-
-      return newData;
-    });
-    validateField(name, value);
-  };
-
-  const handleSave = () => {
-    const isValid = ['reelSize', 'gsm', 'bf'].every(field =>
-      validateField(field, formData[field])
-    );
-
-    if (isValid) {
-      if (isEditing) {
-        onUpdate(formData);
-      } else {
-        onSave(formData);
-      }
-      alert(`Paper Master ${isEditing ? 'updated' : 'saved'} successfully!`);
-      onCancel();
-    }
-  };
-
-  const handleCancel = () => {
-    setFormData(initialFormState);
-    setErrors({});
-    onCancel();
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg mx-auto mt-16 paper-box shade-form-card" >
@@ -297,7 +308,7 @@ const PaperMasterTable = ({ data, onEdit, onDelete }) => {
                     </button>
                     <button
                       className="px-3 py-1 border rounded text-red-600 hover:bg-red-50 btn-delete"
-                      onClick={() => onDelete(paper.partNumber)}
+                      onClick={() => onDelete(paper.id)}
                     >
                       Delete
                     </button>
@@ -317,85 +328,135 @@ const PaperMasterFind = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
-    reelSize: '',
-    gsm: '',
-    bf: ''
+      reelSize: '',
+      gsm: '',
+      bf: ''
   });
   const [editingPaper, setEditingPaper] = useState(null);
-  const [showForm, setShowForm] = useState(false);
 
-  const filterData = useCallback(() => {
-    let filtered = [...paperMasters];
+      // Fetch paper masters on component mount
+      useEffect(() => {
+        fetchPaperMasters();
+    }, []);
 
-    if (searchTerm) {
-      filtered = filtered.filter(paper => 
-        paper.partName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    const fetchPaperMasters = async () => {
+        try {
+            const response = await axios.get(API_BASE_URL);
+            setPaperMasters(response.data);
+            setFilteredData(response.data);
+        } catch (error) {
+            alert(`Error fetching Paper Masters: ${error.response?.data?.message || error.message}`);
+        }
+    };
 
-    if (filters.reelSize) {
-      filtered = filtered.filter(paper => 
-        paper.reelSize === filters.reelSize
-      );
-    }
-    if (filters.gsm) {
-      filtered = filtered.filter(paper => 
-        paper.gsm === filters.gsm
-      );
-    }
-    if (filters.bf) {
-      filtered = filtered.filter(paper => 
-        paper.bf === filters.bf
-      );
-    }
 
-    setFilteredData(filtered);
+    const filterData = useCallback(() => {
+      let filtered = [...paperMasters];
+
+      if (searchTerm) {
+          filtered = filtered.filter(paper => 
+              paper.partName.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+      }
+
+      if (filters.reelSize) {
+          filtered = filtered.filter(paper => 
+              paper.reelSize.toString() === filters.reelSize
+          );
+      }
+      if (filters.gsm) {
+          filtered = filtered.filter(paper => 
+              paper.gsm.toString() === filters.gsm
+          );
+      }
+      if (filters.bf) {
+          filtered = filtered.filter(paper => 
+              paper.bf.toString() === filters.bf
+          );
+      }
+
+      setFilteredData(filtered);
   }, [searchTerm, filters, paperMasters]);
 
-  React.useEffect(() => {
-    filterData();
+  useEffect(() => {
+      filterData();
   }, [filterData]);
+
 
   const handleSave = (formData) => {
     setPaperMasters(prev => [...prev, formData]);
-    setShowForm(false);
-  };
+    setFilteredData(prev => [...prev, formData]);
+    // setShowForm(false);
+};
 
-  const handleUpdate = (updatedPaper) => {
+const handleUpdate = (updatedPaper) => {
     setPaperMasters(prev => 
-      prev.map(paper => 
-        paper.partNumber === updatedPaper.partNumber ? updatedPaper : paper
-      )
+        prev.map(paper => 
+            paper.id === updatedPaper.id ? updatedPaper : paper
+        )
+    );
+    setFilteredData(prev => 
+        prev.map(paper => 
+            paper.id === updatedPaper.id ? updatedPaper : paper
+        )
     );
     setEditingPaper(null);
-    setShowForm(false);
-  };
+    // setShowForm(false);
+};
 
-  const handleDelete = (partNumber) => {
+const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this paper master?')) {
-      setPaperMasters(prev => 
-        prev.filter(paper => paper.partNumber !== partNumber)
-      );
+        try {
+            await axios.delete(`${API_BASE_URL}/${id}`);
+            setPaperMasters(prev => 
+                prev.filter(paper => paper.id !== id)
+            );
+            setFilteredData(prev => 
+                prev.filter(paper => paper.id !== id)
+            );
+        } catch (error) {
+            alert(`Error deleting Paper Master: ${error.response?.data?.message || error.message}`);
+        }
     }
-  };
+};
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-  };
+const handleSearch = async (term) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/search`, {
+            params: { searchTerm: term }
+        });
+        setSearchTerm(term);
+        setFilteredData(response.data);
+    } catch (error) {
+        alert(`Error searching Paper Masters: ${error.response?.data?.message || error.message}`);
+    }
+};
 
-  const handleFilter = (newFilters) => {
-    setFilters(newFilters);
-  };
+const handleFilter = async (newFilters) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/search`, {
+            params: {
+                reelSize: newFilters.reelSize || null,
+                gsm: newFilters.gsm || null,
+                bf: newFilters.bf || null
+            }
+        });
+        setFilters(newFilters);
+        setFilteredData(response.data);
+    } catch (error) {
+        alert(`Error filtering Paper Masters: ${error.response?.data?.message || error.message}`);
+    }
+};
 
-  const handleEdit = (paper) => {
+const handleEdit = (paper) => {
     setEditingPaper(paper);
-    setShowForm(true);
-  };
+    // setShowForm(true);
+};
 
-  const handleCancel = () => {
+const handleCancel = () => {
     setEditingPaper(null);
-    setShowForm(false);
-  };
+    // setShowForm(false);
+};
 
   return (
     <>
