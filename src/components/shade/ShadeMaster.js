@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-// import Navigation from '../navbar/Navbar'; 
+import React, { useState, useEffect } from 'react';
+import { ShadeMasterService } from './ShadeMasterService';
 import NavigationPaper from '../navbar/NavbarPaper';
 import './ShadeMaster.css';
 
@@ -11,8 +11,7 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
 
   const [errors, setErrors] = useState({});
 
-  // Update form data when editingShade changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (editingShade) {
       setFormData({
         shadeName: editingShade.shadeName,
@@ -45,17 +44,25 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
     validateField(name, value);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const isValid = validateField('shadeName', formData.shadeName);
 
     if (isValid) {
-      onSave(formData);
-      alert(editingShade ? 'Shade updated successfully!' : 'Shade saved successfully!');
-      if (!editingShade) {
-        setFormData({
-          shadeName: '',
-          shadeId: ((parseInt(formData.shadeId) || 0) + 1).toString()
-        });
+      try {
+        if (editingShade) {
+          await ShadeMasterService.updateShade(formData.shadeId, formData);
+          alert('Shade updated successfully!');
+        } else {
+          await ShadeMasterService.createShade(formData);
+          alert('Shade saved successfully!');
+          setFormData({
+            shadeName: '',
+            shadeId: ((parseInt(formData.shadeId) || 0) + 1).toString()
+          });
+        }
+        onSave(formData);
+      } catch (error) {
+        alert('Error saving shade: ' + error.message);
       }
     }
   };
@@ -190,24 +197,40 @@ const ShadeMasterPage = () => {
   const [shades, setShades] = useState([]);
   const [editingShade, setEditingShade] = useState(null);
 
+  useEffect(() => {
+    const fetchShades = async () => {
+      try {
+        const fetchedShades = await ShadeMasterService.getAllShades();
+        setShades(fetchedShades);
+      } catch (error) {
+        console.error('Error fetching shades:', error);
+      }
+    };
+
+    fetchShades();
+  }, []);
+
   const handleSave = (formData) => {
-    if (editingShade) {
-      setShades(prev => prev.map(shade => 
-        shade.shadeId === editingShade.shadeId ? formData : shade
-      ));
-      setEditingShade(null);
-    } else {
-      setShades(prev => [...prev, formData]);
-    }
+    const updatedShades = editingShade 
+      ? shades.map(shade => shade.shadeId === editingShade.shadeId ? formData : shade)
+      : [...shades, formData];
+    
+    setShades(updatedShades);
+    setEditingShade(null);
   };
 
   const handleUpdate = (shade) => {
     setEditingShade(shade);
   };
 
-  const handleDelete = (shadeId) => {
+  const handleDelete = async (shadeId) => {
     if (window.confirm('Are you sure you want to delete this shade?')) {
-      setShades(prev => prev.filter(shade => shade.shadeId !== shadeId));
+      try {
+        await ShadeMasterService.deleteShade(shadeId);
+        setShades(prev => prev.filter(shade => shade.shadeId !== shadeId));
+      } catch (error) {
+        alert('Error deleting shade: ' + error.message);
+      }
     }
   };
 
