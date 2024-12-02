@@ -1,80 +1,121 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Make sure to install axios: npm install axios
 import './paperOut.css';
 
+axios.defaults.baseURL = 'http://localhost:9090';
 const PaperOutModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('reel-out');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedReel, setSelectedReel] = useState(null);
   const [outQuantity, setOutQuantity] = useState('');
 
-  // Mock data - replace with your actual data
-  const [reels, setReels] = useState([
-    {
-      reelNumber: 'A-001',
-      paperName: '30/120/16',
-      quantity: 1000,
-      millName: 'Mill A',
-      shade: 'White',
-      rate: 45.50,
-      days: 5,
-      isPartiallyUsed: false
+  // State for reels and history
+  const [reels, setReels] = useState([]);
+  const [history, setHistory] = useState([]);
+
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch reels and history on component mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchReels();
+      fetchHistory();
     }
-  ]);
+  }, [isOpen]);
 
-  const [history, setHistory] = useState([
-    {
-      date: '2024-11-17',
-      reelNumber: 'A-001',
-      paperName: '30/120/16',
-      quantityUsed: 200,
-      quantityLeft: 800,
-      millName: 'Mill A',
-      shade: 'White',
-      ratePerKg: 45.50
+  // Fetch reels from backend
+  const fetchReels = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const reelsResponse = await axios.get('/api/reels');
+      setReels(reelsResponse.data);
+    } catch (err) {
+      setError('Failed to fetch reels. Please try again.');
+      console.error('Reels fetch error:', err);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
-
-  const filteredReels = reels.filter(reel => 
-    Object.values(reel).some(value => 
-      value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
-
-  const handleReelDoubleClick = (reel) => {
-    setSelectedReel(reel);
   };
 
-  const handleOutQuantitySubmit = () => {
+  // Fetch history from backend
+  const fetchHistory = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const historyResponse = await axios.get('/api/reels/history');
+      setHistory(historyResponse.data);
+    } catch (err) {
+      setError('Failed to fetch history. Please try again.');
+      console.error('History fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Search reels
+  const searchReels = async (query) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const searchResponse = await axios.get(`/api/reels/search?searchTerm=${query}`);
+      setReels(searchResponse.data);
+    } catch (err) {
+      setError('Failed to search reels. Please try again.');
+      console.error('Reels search error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    // Debounce search to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      if (query) {
+        searchReels(query);
+      } else {
+        fetchReels(); // Reset to full list if search is empty
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  };
+
+  // Handle reel out submission
+  const handleOutQuantitySubmit = async () => {
     if (!selectedReel || !outQuantity || isNaN(outQuantity)) return;
 
-    const outQty = Number(outQuantity);
-    const updatedReels = reels.map(reel => {
-      if (reel.reelNumber === selectedReel.reelNumber) {
-        const newQuantity = reel.quantity - outQty;
-        return {
-          ...reel,
-          quantity: newQuantity,
-          isPartiallyUsed: true
-        };
-      }
-      return reel;
-    }).filter(reel => reel.quantity > 0);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post('/api/reels/stock-out', {
+        reelNumber: selectedReel.reelNumber,
+        outQuantity: Number(outQuantity)
+      });
 
-    const historyEntry = {
-      date: new Date().toISOString().split('T')[0],
-      reelNumber: selectedReel.reelNumber,
-      paperName: selectedReel.paperName,
-      quantityUsed: outQty,
-      quantityLeft: selectedReel.quantity - outQty,
-      millName: selectedReel.millName,
-      shade: selectedReel.shade,
-      ratePerKg: selectedReel.rate
-    };
+      // Refresh reels and history after successful stock out
+      fetchReels();
+      fetchHistory();
 
-    setReels(updatedReels);
-    setHistory([historyEntry, ...history]);
-    setSelectedReel(null);
-    setOutQuantity('');
+      setSelectedReel(null);
+      setOutQuantity('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to stock out reel. Please try again.');
+      console.error('Reel out error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle reel double click
+  const handleReelDoubleClick = (reel) => {
+    setSelectedReel(reel);
   };
 
   if (!isOpen) return null;
@@ -89,6 +130,18 @@ const PaperOutModal = ({ isOpen, onClose }) => {
         <div className="modal-header">
           <h2>Paper Out Management</h2>
         </div>
+
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="loading-spinner">
+            Loading...
+          </div>
+        )}
 
         <div className="tabs">
           <button
@@ -112,7 +165,7 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                 type="text"
                 placeholder="Search by paper name, shade, reel number..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className="search-input"
               />
             </div>
@@ -132,7 +185,7 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredReels.map((reel) => (
+                  {reels.map((reel) => (
                     <tr
                       key={reel.reelNumber}
                       onDoubleClick={() => handleReelDoubleClick(reel)}
@@ -170,9 +223,9 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {history.map((entry, index) => (
-                  <tr key={index}>
-                    <td>{entry.date}</td>
+                {history.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{new Date(entry.outTimestamp).toLocaleDateString()}</td>
                     <td>{entry.reelNumber}</td>
                     <td>{entry.paperName}</td>
                     <td>{entry.quantityUsed}</td>
@@ -226,9 +279,9 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                   <button
                     className="button primary"
                     onClick={handleOutQuantitySubmit}
-                    disabled={!outQuantity || Number(outQuantity) > selectedReel.quantity}
+                    disabled={!outQuantity || Number(outQuantity) > selectedReel.quantity || isLoading}
                   >
-                    Out
+                    {isLoading ? 'Processing...' : 'Out'}
                   </button>
                 </div>
               </div>
