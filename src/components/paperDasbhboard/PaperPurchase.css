@@ -197,3 +197,12 @@
   tbody tr:hover {
     background: #e6f7ff;
   }
+
+/* Apply grid layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two equal-width columns */
+  gap: 20px; /* Space between grid items */
+  padding: 10px;
+}
+
