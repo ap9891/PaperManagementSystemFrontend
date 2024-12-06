@@ -1,68 +1,127 @@
-/* eslint-disable no-unused-vars */
-import { useState } from 'react';
-import './ForgotPassword.css'
+import React, { useState } from 'react';
+import axios from 'axios';
+import './ForgotPassword.css';
+
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [step, setStep] = useState(1);
-  
-    const handleSendOTP = async () => {
-      // API call to send OTP
-      setStep(2);
-    };
-  
-    const handleResetPassword = async () => {
-      // API call to verify OTP and reset password
-    };
-  
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
-          {step === 1 ? (
-            <div>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded mb-4"
-              />
-              <button
-                onClick={handleSendOTP}
-                className="w-full bg-blue-500 text-white p-2 rounded"
-              >
-                Send OTP
-              </button>
-            </div>
-          ) : (
-            <div>
-              <input
-                type="text"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full p-2 border rounded mb-4"
-              />
-              <input
-                type="password"
-                placeholder="Enter new password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full p-2 border rounded mb-4"
-              />
-              <button
-                onClick={handleResetPassword}
-                className="w-full bg-blue-500 text-white p-2 rounded"
-              >
-                Reset Password
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-  export default ForgotPassword;
+    const BASE_URL = 'http://localhost:9090/api/auth';
+
+    const handleSendOTP = async () => {
+        setError('');
+        setLoading(true);
+        try {
+            await axios.post(`${BASE_URL}/forgot-password`, { email });
+            setStep(2);
+            setError('');
+        } catch (err) {
+            setError(err.response?.data || 'Failed to send OTP');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResetPassword = async () => {
+        setError('');
+        setLoading(true);
+        try {
+            await axios.post(`${BASE_URL}/reset-password`, {
+                email,
+                otp,
+                newPassword
+            });
+            setStep(3); // Optional: add a success screen
+            setError('');
+        } catch (err) {
+            setError(err.response?.data || 'Failed to reset password');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const renderStep = () => {
+        switch (step) {
+            case 1:
+                return (
+                    <div>
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full p-2 border rounded mb-4"
+                        />
+                        <button
+                            onClick={handleSendOTP}
+                            disabled={loading}
+                            className={`w-full p-2 rounded ${
+                                loading ? 'bg-gray-400' : 'bg-blue-500 text-white'
+                            }`}
+                        >
+                            {loading ? 'Sending OTP...' : 'Send OTP'}
+                        </button>
+                    </div>
+                );
+            case 2:
+                return (
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Enter OTP"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            className="w-full p-2 border rounded mb-4"
+                        />
+                        <input
+                            type="password"
+                            placeholder="Enter new password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full p-2 border rounded mb-4"
+                        />
+                        <button
+                            onClick={handleResetPassword}
+                            disabled={loading}
+                            className={`w-full p-2 rounded ${
+                                loading ? 'bg-gray-400' : 'bg-blue-500 text-white'
+                            }`}
+                        >
+                            {loading ? 'Resetting Password...' : 'Reset Password'}
+                        </button>
+                    </div>
+                );
+            case 3:
+                return (
+                    <div className="text-center">
+                        <h3 className="text-green-600 font-bold mb-4">
+                            Password Reset Successfully
+                        </h3>
+                        <p>You can now log in with your new password.</p>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-gray-100">
+            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+                <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        {error}
+                    </div>
+                )}
+                {renderStep()}
+            </div>
+        </div>
+    );
+};
+
+export default ForgotPassword;

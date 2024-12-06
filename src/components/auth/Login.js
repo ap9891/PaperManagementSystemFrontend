@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
@@ -7,6 +7,14 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if user is already logged in
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -32,14 +40,21 @@ const Login = () => {
                 throw new Error(data.message || 'Login failed');
             }
     
+            // Store token and user info securely
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({ email: data.email }));
+            localStorage.setItem('user', JSON.stringify({ 
+                email: data.email,
+                loggedInAt: new Date().toISOString()
+            }));
+            
+            // Redirect to dashboard
             navigate('/dashboard');
         } catch (error) {
             console.error('Login error:', error);
             setError(error.message || 'Login failed. Please try again.');
         }
     };
+
     return (
         <div className="login-container">
             <h2 className="login-title">Login</h2>
