@@ -15,23 +15,29 @@ const MillMasterForm = ({ onSave, editingMill }) => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch next mill ID when component mounts or when not editing
   useEffect(() => {
-    const fetchNextMillId = async () => {
-      try {
-        if (!editingMill) {
+    const initializeForm = async () => {
+      if (editingMill) {
+        // When editing an existing mill, use its details
+        setFormData({
+          millName: editingMill.millName,
+          millId: editingMill.millId
+        });
+      } else {
+        // Always fetch a new mill ID when adding a new mill
+        try {
           const response = await axios.get(`${API_BASE_URL}/next-id`);
-          setFormData(prev => ({
-            ...prev,
+          setFormData({
+            millName: '',
             millId: response.data
-          }));
+          });
+        } catch (error) {
+          console.error('Error fetching next mill ID:', error);
         }
-      } catch (error) {
-        console.error('Error fetching next mill ID:', error);
       }
     };
 
-    fetchNextMillId();
+    initializeForm();
   }, [editingMill]);
 
   // Update form data when editingMill changes
@@ -48,7 +54,7 @@ const MillMasterForm = ({ onSave, editingMill }) => {
     const newErrors = { ...errors };
 
     if (name === 'millName' && !value.trim()) {
-      newErrors.millName = 'Mill Name is required';
+      newErrors.millName = 'Mill Name is required & >=3';
     } else {
       delete newErrors.millName;
     }
@@ -74,11 +80,13 @@ const MillMasterForm = ({ onSave, editingMill }) => {
         
         // Reset form or prepare for next entry
         if (!editingMill) {
+          const nextIdResponse = await axios.get(`${API_BASE_URL}/next-id`);
           setFormData({
             millName: '',
-            millId: '' // Will be fetched by useEffect
+            millId: nextIdResponse.data
           });
         }
+
 
         alert(editingMill ? 'Mill updated successfully!' : 'Mill Master saved successfully!');
       } catch (error) {
@@ -90,15 +98,19 @@ const MillMasterForm = ({ onSave, editingMill }) => {
     }
   };
 
-  const handleCancel = () => {
-    // Reset form
-    setFormData({
-      millName: '',
-      millId: ''
-    });
-    setErrors({});
+  const handleCancel = async () => {
+    // Fetch a new Mill ID on cancel
+    try {
+      const response = await axios.get(`${API_BASE_URL}/next-id`);
+      setFormData({
+        millName: '',
+        millId: response.data
+      });
+      setErrors({});
+    } catch (error) {
+      console.error('Error fetching next mill ID:', error);
+    }
   };
-
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg mx-auto mt-16 paper-box-mill shade-form-card">
       <h2 className="text-2xl font-bold text-gray-800 heading-paper-master-mill card-header-mill">
@@ -239,14 +251,19 @@ const MillMasterPage = () => {
   }, []);
 
   const handleSave = (mill) => {
-    // Optimistically update UI
     if (editingMill) {
+      // Update existing mill
       setMills(prev => prev.map(m => 
         m.millId === mill.millId ? mill : m
       ));
       setEditingMill(null);
     } else {
-      setMills(prev => [...prev, mill]);
+      // Add new mill, ensuring no duplicates
+      setMills(prev => {
+        // Check if mill already exists to prevent duplicates
+        const exists = prev.some(m => m.millId === mill.millId);
+        return exists ? prev : [...prev, mill];
+      });
     }
   };
 
