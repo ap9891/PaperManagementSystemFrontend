@@ -7,6 +7,11 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+        useEffect(() => {
+        // Clear any existing tokens
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    }, []);
 
     useEffect(() => {
         // Check if user is already logged in
@@ -15,6 +20,7 @@ const Login = () => {
             navigate('/dashboard');
         }
     }, [navigate]);
+
 
     const handleLogin = async (e) => {
         e.preventDefault();

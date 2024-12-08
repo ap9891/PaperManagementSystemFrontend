@@ -117,6 +117,11 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
       alert("Quantity must be between 1 and 2000");
       return false;
     }
+    if (parseInt(formData.ratePerKg) < 1) {
+      alert("RatePerKg must be at least 1");
+      return false;
+    }
+    
     
     return true;
   };

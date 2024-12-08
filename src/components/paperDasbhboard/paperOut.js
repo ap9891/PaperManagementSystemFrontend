@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Make sure to install axios: npm install axios
-import './paperOut.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios"; // Make sure to install axios: npm install axios
+import "./paperOut.css";
 
-axios.defaults.baseURL = 'http://localhost:9090';
+axios.defaults.baseURL = "http://localhost:9090";
 const PaperOutModal = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState('reel-out');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState("reel-out");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedReel, setSelectedReel] = useState(null);
-  const [outQuantity, setOutQuantity] = useState('');
+  const [outQuantity, setOutQuantity] = useState("");
 
   // State for reels and history
   const [reels, setReels] = useState([]);
@@ -30,11 +30,11 @@ const PaperOutModal = ({ isOpen, onClose }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const reelsResponse = await axios.get('/api/reels');
+      const reelsResponse = await axios.get("/api/reels");
       setReels(reelsResponse.data);
     } catch (err) {
-      setError('Failed to fetch reels. Please try again.');
-      console.error('Reels fetch error:', err);
+      setError("Failed to fetch reels. Please try again.");
+      console.error("Reels fetch error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -45,11 +45,11 @@ const PaperOutModal = ({ isOpen, onClose }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const historyResponse = await axios.get('/api/reels/history');
+      const historyResponse = await axios.get("/api/reels/history");
       setHistory(historyResponse.data);
     } catch (err) {
-      setError('Failed to fetch history. Please try again.');
-      console.error('History fetch error:', err);
+      setError("Failed to fetch history. Please try again.");
+      console.error("History fetch error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -60,11 +60,13 @@ const PaperOutModal = ({ isOpen, onClose }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const searchResponse = await axios.get(`/api/reels/search?searchTerm=${query}`);
+      const searchResponse = await axios.get(
+        `/api/reels/search?searchTerm=${query}`
+      );
       setReels(searchResponse.data);
     } catch (err) {
-      setError('Failed to search reels. Please try again.');
-      console.error('Reels search error:', err);
+      setError("Failed to search reels. Please try again.");
+      console.error("Reels search error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +76,7 @@ const PaperOutModal = ({ isOpen, onClose }) => {
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(() => {
       if (query) {
@@ -94,9 +96,9 @@ const PaperOutModal = ({ isOpen, onClose }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/reels/stock-out', {
+      const response = await axios.post("/api/reels/stock-out", {
         reelNumber: selectedReel.reelNumber,
-        outQuantity: Number(outQuantity)
+        outQuantity: Number(outQuantity),
       });
 
       // Refresh reels and history after successful stock out
@@ -104,10 +106,13 @@ const PaperOutModal = ({ isOpen, onClose }) => {
       fetchHistory();
 
       setSelectedReel(null);
-      setOutQuantity('');
+      setOutQuantity("");
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to stock out reel. Please try again.');
-      console.error('Reel out error:', err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to stock out reel. Please try again."
+      );
+      console.error("Reel out error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -124,41 +129,35 @@ const PaperOutModal = ({ isOpen, onClose }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <div>
-          <button className="close-button" onClick={onClose}>&times;</button>
+          <button className="close-button" onClick={onClose}>
+            &times;
+          </button>
         </div>
-        
+
         <div className="modal-header">
           <h2>Paper Out Management</h2>
         </div>
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
+        {error && <div className="error-message">{error}</div>}
 
-        {isLoading && (
-          <div className="loading-spinner">
-            Loading...
-          </div>
-        )}
+        {isLoading && <div className="loading-spinner">Loading...</div>}
 
         <div className="tabs">
           <button
-            className={`tab-button ${activeTab === 'reel-out' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reel-out')}
+            className={`tab-button ${activeTab === "reel-out" ? "active" : ""}`}
+            onClick={() => setActiveTab("reel-out")}
           >
             Reel Out
           </button>
           <button
-            className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
+            className={`tab-button ${activeTab === "history" ? "active" : ""}`}
+            onClick={() => setActiveTab("history")}
           >
             History
           </button>
         </div>
 
-        {activeTab === 'reel-out' ? (
+        {activeTab === "reel-out" ? (
           <div className="form-content">
             <div className="search-container">
               <input
@@ -192,7 +191,9 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                       className="table-row-hover"
                     >
                       <td>
-                        {reel.isPartiallyUsed && <span className="star">★</span>}
+                        {reel.isPartiallyUsed && (
+                          <span className="star">★</span>
+                        )}
                       </td>
                       <td>{reel.reelNumber}</td>
                       <td>{reel.paperName}</td>
@@ -254,7 +255,14 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                       type="number"
                       id="outQuantity"
                       value={outQuantity}
-                      onChange={(e) => setOutQuantity(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value >= 0) {
+                          setOutQuantity(value);
+                        } else {
+                          alert("Quantity must be a positive value.");
+                        }
+                      }}
                       max={selectedReel.quantity}
                       min="0"
                     />
@@ -264,13 +272,17 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                     <input
                       type="number"
                       id="balance"
-                      value={outQuantity ? selectedReel.quantity - Number(outQuantity) : selectedReel.quantity}
+                      value={
+                        outQuantity
+                          ? selectedReel.quantity - Number(outQuantity)
+                          : selectedReel.quantity
+                      }
                       disabled
                     />
                   </div>
                 </div>
                 <div className="button-group">
-                  <button 
+                  <button
                     className="button secondary"
                     onClick={() => setSelectedReel(null)}
                   >
@@ -279,9 +291,13 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                   <button
                     className="button primary"
                     onClick={handleOutQuantitySubmit}
-                    disabled={!outQuantity || Number(outQuantity) > selectedReel.quantity || isLoading}
+                    disabled={
+                      !outQuantity ||
+                      Number(outQuantity) > selectedReel.quantity ||
+                      isLoading
+                    }
                   >
-                    {isLoading ? 'Processing...' : 'Out'}
+                    {isLoading ? "Processing..." : "Out"}
                   </button>
                 </div>
               </div>

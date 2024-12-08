@@ -10,11 +10,11 @@ const ProtectedRoute = () => {
         const user = JSON.parse(localStorage.getItem('user'));
         const loggedInAt = user ? new Date(user.loggedInAt) : null;
         
-        // Token expires after 24 hours
+        // Token expires after 1 hours
         if (loggedInAt) {
             const now = new Date();
             const hoursSinceLogin = (now - new Date(loggedInAt)) / (1000 * 60 * 60);
-            if (hoursSinceLogin > 24) {
+            if (hoursSinceLogin > 1) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 return false;
