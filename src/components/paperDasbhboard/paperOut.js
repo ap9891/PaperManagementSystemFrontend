@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios"; // Make sure to install axios: npm install axios
 import "./paperOut.css";
+import Alert from "../Alert/Alert";
 
 axios.defaults.baseURL = "http://localhost:9090";
 const PaperOutModal = ({ isOpen, onClose }) => {
@@ -16,6 +17,7 @@ const PaperOutModal = ({ isOpen, onClose }) => {
   // Loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // Fetch reels and history on component mount
   useEffect(() => {
@@ -105,6 +107,9 @@ const PaperOutModal = ({ isOpen, onClose }) => {
       fetchReels();
       fetchHistory();
 
+      // Set success message
+      setSuccessMessage(`Successfully stocked out ${outQuantity} from reel ${selectedReel.reelNumber}`);
+
       setSelectedReel(null);
       setOutQuantity("");
     } catch (err) {
@@ -127,6 +132,24 @@ const PaperOutModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="modal-overlay">
+      {/* Render Alert for success messages */}
+      {successMessage && (
+        <Alert 
+          type="success" 
+          message={successMessage} 
+          onClose={() => setSuccessMessage(null)} 
+        />
+      )}
+
+      {/* Render Alert for error messages */}
+      {error && (
+        <Alert 
+          type="error" 
+          message={error} 
+          onClose={() => setError(null)} 
+        />
+      )}
+
       <div className="modal-content">
         <div>
           <button className="close-button" onClick={onClose}>
@@ -138,7 +161,8 @@ const PaperOutModal = ({ isOpen, onClose }) => {
           <h2>Paper Out Management</h2>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {/* Remove old error display as it's now handled by Alert */}
+        {/* {error && <div className="error-message">{error}</div>} */}
 
         {isLoading && <div className="loading-spinner">Loading...</div>}
 
@@ -157,6 +181,7 @@ const PaperOutModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
+        {/* Rest of the code remains the same */}
         {activeTab === "reel-out" ? (
           <div className="form-content">
             <div className="search-container">
@@ -260,7 +285,8 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                         if (value >= 0) {
                           setOutQuantity(value);
                         } else {
-                          alert("Quantity must be a positive value.");
+                          // Replace alert with our new Alert component
+                          setError("Quantity must be a positive value.");
                         }
                       }}
                       max={selectedReel.quantity}

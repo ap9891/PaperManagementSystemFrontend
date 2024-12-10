@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import NavigationPaper from '../navbar/NavbarPaper';
 import axios from 'axios';
 import './millMaster.css';
+// import Alert from './Alert'; // Import the new Alert component
+import Alert from '../Alert/Alert';
 
 // API base URL - consider moving to environment config
 const API_BASE_URL = 'http://localhost:9090/api/mills';
@@ -87,11 +89,10 @@ const MillMasterForm = ({ onSave, editingMill }) => {
           });
         }
 
-
-        alert(editingMill ? 'Mill updated successfully!' : 'Mill Master saved successfully!');
+        return editingMill ? 'Mill updated successfully!' : 'Mill Master saved successfully!';
       } catch (error) {
         console.error('Error saving mill:', error);
-        alert('Failed to save mill. Please try again.');
+        throw new Error('Failed to save mill. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -111,6 +112,7 @@ const MillMasterForm = ({ onSave, editingMill }) => {
       console.error('Error fetching next mill ID:', error);
     }
   };
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg mx-auto mt-16 paper-box-mill shade-form-card">
       <h2 className="text-2xl font-bold text-gray-800 heading-paper-master-mill card-header-mill">
@@ -233,6 +235,7 @@ const MillMasterPage = () => {
   const [mills, setMills] = useState([]);
   const [editingMill, setEditingMill] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [alert, setAlert] = useState(null);
 
   // Fetch mills on component mount
   useEffect(() => {
@@ -244,19 +247,30 @@ const MillMasterPage = () => {
       } catch (error) {
         console.error('Error fetching mills:', error);
         setIsLoading(false);
+        setAlert({ type: 'error', message: 'Failed to fetch mills' });
       }
     };
 
     fetchMills();
   }, []);
 
-  const handleSave = (mill) => {
+  const handleSave = async (mill) => {
+    try {
+      const message = await handleSaveAttempt(mill);
+      setAlert({ type: 'success', message });
+    } catch (error) {
+      setAlert({ type: 'error', message: error.message });
+    }
+  };
+
+  const handleSaveAttempt = async (mill) => {
     if (editingMill) {
       // Update existing mill
       setMills(prev => prev.map(m => 
         m.millId === mill.millId ? mill : m
       ));
       setEditingMill(null);
+      return 'Mill updated successfully!';
     } else {
       // Add new mill, ensuring no duplicates
       setMills(prev => {
@@ -264,6 +278,7 @@ const MillMasterPage = () => {
         const exists = prev.some(m => m.millId === mill.millId);
         return exists ? prev : [...prev, mill];
       });
+      return 'Mill Master saved successfully!';
     }
   };
 
@@ -276,9 +291,10 @@ const MillMasterPage = () => {
       try {
         await axios.delete(`${API_BASE_URL}/${millId}`);
         setMills(prev => prev.filter(mill => mill.millId !== millId));
+        setAlert({ type: 'success', message: 'Mill deleted successfully!' });
       } catch (error) {
         console.error('Error deleting mill:', error);
-        alert('Failed to delete mill. Please try again.');
+        setAlert({ type: 'error', message: 'Failed to delete mill. Please try again.' });
       }
     }
   };
@@ -290,6 +306,13 @@ const MillMasterPage = () => {
   return (
     <>
       <NavigationPaper />
+      {alert && (
+        <Alert 
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
       <div className="p-4 pt-20 min-h-screen bg-gray-50">
         <MillMasterForm
           onSave={handleSave}

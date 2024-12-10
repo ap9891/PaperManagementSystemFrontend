@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import axios from 'axios'; 
 import './PaperPurchase.css';
+import Alert from '../Alert/Alert';
 
 axios.defaults.baseURL = 'http://localhost:9090';
 
@@ -23,6 +24,7 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
   const [millMasterData, setMillMasterData] = useState([]);
   const [shadeMasterData, setShadeMasterData] = useState([]);
   const [history, setHistory] = useState([]);
+  const [alert, setAlert] = useState(null);
 
   // Fetch master data on component mount
   useEffect(() => {
@@ -39,7 +41,10 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
         setShadeMasterData(shadeResponse.data);
       } catch (error) {
         console.error('Error fetching master data:', error);
-        alert('Failed to load master data');
+        setAlert({
+          type: 'error',
+          message: 'Failed to load master data'
+        });
       }
     };
 
@@ -49,7 +54,10 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
         setHistory(response.data);
       } catch (error) {
         console.error('Error fetching purchase history:', error);
-        alert('Failed to load purchase history');
+        setAlert({
+          type: 'error',
+          message: 'Failed to load purchase history'
+        });
       }
     };
 
@@ -66,7 +74,10 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
       return response.data;
     } catch (error) {
       console.error('Error generating reel number:', error);
-      alert('Failed to generate reel number');
+      alert('Failed to generate reel number');      setAlert({
+        type: 'error',
+        message: 'Failed to generate reel number'
+      });
       return '';
     }
   }, []);
@@ -109,19 +120,27 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
   const validateForm = () => {
     if (!formData.paperName || !formData.quantity || !formData.millName || 
         !formData.shade || !formData.ratePerKg) {
-      alert("Please fill all required fields");
+      setAlert({
+        type: 'warning',
+        message: "Please fill all required fields"
+      });
       return false;
     }
     
     if (parseInt(formData.quantity) < 1 || parseInt(formData.quantity) > 2000) {
-      alert("Quantity must be between 1 and 2000");
+      setAlert({
+        type: 'warning',
+        message: "Quantity must be between 1 and 2000"
+      });
       return false;
     }
     if (parseInt(formData.ratePerKg) < 1) {
-      alert("RatePerKg must be at least 1");
+      setAlert({
+        type: 'warning',
+        message: "RatePerKg must be at least 1"
+      });
       return false;
     }
-    
     
     return true;
   };
@@ -137,7 +156,11 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
       // Update local history
       setHistory(prev => [savedPurchase, ...prev]);
       
-      alert("Paper purchase record saved successfully");
+      // Show success alert
+      setAlert({
+        type: 'success',
+        message: "Paper purchase record saved successfully"
+      });
 
       // Reset form based on save type
       if (saveAndNext) {
@@ -165,14 +188,25 @@ const PaperPurchaseModal = ({ isOpen, onClose }) => {
       }
     } catch (error) {
       console.error('Error saving paper purchase:', error);
-      alert('Failed to save paper purchase');
+      setAlert({
+        type: 'error',
+        message: 'Failed to save paper purchase'
+      });
     }
   };
+
 
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
+            {alert && (
+        <Alert 
+          type={alert.type} 
+          message={alert.message} 
+          onClose={() => setAlert(null)} 
+        />
+      )}
       <div className="modal-content">
         <div>
           <button

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import './paperMaster.css';
 import NavigationPaper from '../navbar/NavbarPaper';
+import Alert from '../Alert/Alert';
 
 // Base URL for API calls
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:9090/api/paper-master';
@@ -18,7 +19,13 @@ const PaperMasterForm = ({ onSave, lastPartNumber, initialData, isEditing, onUpd
     
     const [formData, setFormData] = useState(initialFormState);
     const [errors, setErrors] = useState({});
+  // New state for alerts
+  const [alert, setAlert] = useState(null);
 
+  // Utility function to show alerts
+  const showAlert = (message, type = 'info') => {
+    setAlert({ message, type });
+  };
     useEffect(() => {
         if (isEditing && initialData) {
             setFormData(initialData);
@@ -77,26 +84,26 @@ const PaperMasterForm = ({ onSave, lastPartNumber, initialData, isEditing, onUpd
     };
 
     const handleSave = async () => {
-        const isValid = ['reelSize', 'gsm', 'bf'].every(field =>
-            validateField(field, formData[field])
-        );
+      const isValid = ['reelSize', 'gsm', 'bf'].every(field =>
+          validateField(field, formData[field])
+      );
 
-        if (isValid) {
-            try {
-                if (isEditing) {
-                    const response = await axios.put(`${API_BASE_URL}/${formData.id}`, formData);
-                    onUpdate(response.data);
-                } else {
-                    const response = await axios.post(API_BASE_URL, formData);
-                    onSave(response.data);
-                }
-                alert(`Paper Master ${isEditing ? 'updated' : 'saved'} successfully!`);
-                onCancel();
-            } catch (error) {
-                alert(`Error ${isEditing ? 'updating' : 'saving'} Paper Master: ${error.response?.data?.message || error.message}`);
-            }
-        }
-    };
+      if (isValid) {
+          try {
+              if (isEditing) {
+                  const response = await axios.put(`${API_BASE_URL}/${formData.id}`, formData);
+                  onUpdate(response.data);
+              } else {
+                  const response = await axios.post(API_BASE_URL, formData);
+                  onSave(response.data);
+              }
+              showAlert(`Paper Master ${isEditing ? 'updated' : 'saved'} successfully!`, 'success');
+              onCancel();
+          } catch (error) {
+              showAlert(`Error ${isEditing ? 'updating' : 'saving'} Paper Master: ${error.response?.data?.message || error.message}`, 'error');
+          }
+      }
+  };
 
     const handleCancel = () => {
         setFormData(initialFormState);
@@ -333,6 +340,13 @@ const PaperMasterFind = () => {
       bf: ''
   });
   const [editingPaper, setEditingPaper] = useState(null);
+  const [alert, setAlert] = useState(null);
+
+  // Utility function to show alerts
+  const showAlert = (message, type = 'info') => {
+    setAlert({ message, type });
+  };
+
 
       // Fetch paper masters on component mount
       useEffect(() => {
@@ -340,13 +354,13 @@ const PaperMasterFind = () => {
     }, []);
 
     const fetchPaperMasters = async () => {
-        try {
-            const response = await axios.get(API_BASE_URL);
-            setPaperMasters(response.data);
-            setFilteredData(response.data);
-        } catch (error) {
-            alert(`Error fetching Paper Masters: ${error.response?.data?.message || error.message}`);
-        }
+      try {
+        const response = await axios.get(API_BASE_URL);
+        setPaperMasters(response.data);
+        setFilteredData(response.data);
+      } catch (error) {
+        showAlert(`Error fetching Paper Masters: ${error.response?.data?.message || error.message}`, 'error');
+      }
     };
 
 
@@ -386,67 +400,74 @@ const PaperMasterFind = () => {
   const handleSave = (formData) => {
     setPaperMasters(prev => [...prev, formData]);
     setFilteredData(prev => [...prev, formData]);
-    // setShowForm(false);
-};
-
-const handleUpdate = (updatedPaper) => {
+    showAlert('Paper Master added successfully!', 'success');
+  };
+  const handleUpdate = (updatedPaper) => {
     setPaperMasters(prev => 
-        prev.map(paper => 
-            paper.id === updatedPaper.id ? updatedPaper : paper
-        )
+      prev.map(paper => 
+        paper.id === updatedPaper.id ? updatedPaper : paper
+      )
     );
     setFilteredData(prev => 
-        prev.map(paper => 
-            paper.id === updatedPaper.id ? updatedPaper : paper
-        )
+      prev.map(paper => 
+        paper.id === updatedPaper.id ? updatedPaper : paper
+      )
     );
     setEditingPaper(null);
-    // setShowForm(false);
-};
+    showAlert('Paper Master updated successfully!', 'success');
+  };
 
-const handleDelete = async (id) => {
+
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this paper master?')) {
-        try {
-            await axios.delete(`${API_BASE_URL}/${id}`);
-            setPaperMasters(prev => 
-                prev.filter(paper => paper.id !== id)
-            );
-            setFilteredData(prev => 
-                prev.filter(paper => paper.id !== id)
-            );
-        } catch (error) {
-            alert(`Error deleting Paper Master: ${error.response?.data?.message || error.message}`);
+      try {
+        await axios.delete(`${API_BASE_URL}/${id}`);
+        setPaperMasters(prev => 
+          prev.filter(paper => paper.id !== id)
+        );
+        setFilteredData(prev => 
+          prev.filter(paper => paper.id !== id)
+        );
+        showAlert('Paper Master deleted successfully!', 'success');
+      } catch (error) {
+        showAlert(`Error deleting Paper Master: ${error.response?.data?.message || error.message}`, 'error');
+      }
+    }
+  };
+
+  const handleSearch = async (term) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/search`, {
+        params: { searchTerm: term }
+      });
+      setSearchTerm(term);
+      setFilteredData(response.data);
+      if (response.data.length === 0) {
+        showAlert('No results found', 'warning');
+      }
+    } catch (error) {
+      showAlert(`Error searching Paper Masters: ${error.response?.data?.message || error.message}`, 'error');
+    }
+  };
+
+  const handleFilter = async (newFilters) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/search`, {
+        params: {
+          reelSize: newFilters.reelSize || null,
+          gsm: newFilters.gsm || null,
+          bf: newFilters.bf || null
         }
-    }
-};
-
-const handleSearch = async (term) => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/search`, {
-            params: { searchTerm: term }
-        });
-        setSearchTerm(term);
-        setFilteredData(response.data);
+      });
+      setFilters(newFilters);
+      setFilteredData(response.data);
+      if (response.data.length === 0) {
+        showAlert('No results found matching the filter', 'warning');
+      }
     } catch (error) {
-        alert(`Error searching Paper Masters: ${error.response?.data?.message || error.message}`);
+      showAlert(`Error filtering Paper Masters: ${error.response?.data?.message || error.message}`, 'error');
     }
-};
-
-const handleFilter = async (newFilters) => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/search`, {
-            params: {
-                reelSize: newFilters.reelSize || null,
-                gsm: newFilters.gsm || null,
-                bf: newFilters.bf || null
-            }
-        });
-        setFilters(newFilters);
-        setFilteredData(response.data);
-    } catch (error) {
-        alert(`Error filtering Paper Masters: ${error.response?.data?.message || error.message}`);
-    }
-};
+  };
 
 const handleEdit = (paper) => {
     setEditingPaper(paper);
@@ -460,6 +481,14 @@ const handleCancel = () => {
 
   return (
     <>
+         {alert && (
+        <Alert 
+          type={alert.type} 
+          message={alert.message} 
+          onClose={() => setAlert(null)}
+        />
+      )}
+
     <NavigationPaper />
       <div className="p-4 pt-20 min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto">
@@ -482,6 +511,7 @@ const handleCancel = () => {
               isEditing={!!editingPaper}
               onUpdate={handleUpdate}
               onCancel={handleCancel}
+              showAlert={showAlert}
             />
           {/* )} */}
 

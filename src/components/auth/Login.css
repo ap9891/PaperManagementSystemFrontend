@@ -86,3 +86,12 @@ body {
     text-decoration: underline;
     color: #0056b3;
 }
+
+.login-label.password-button + input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}

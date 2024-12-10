@@ -13,32 +13,50 @@ const ForgotPassword = () => {
     const BASE_URL = 'http://localhost:9090/api/auth';
 
     const handleSendOTP = async () => {
+        // Validate email before sending
+        if (!email || !/\S+@\S+\.\S+/.test(email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
         setError('');
         setLoading(true);
         try {
-            await axios.post(`${BASE_URL}/forgot-password`, { email });
+            const response = await axios.post(`${BASE_URL}/forgot-password`, { 
+                email 
+            });
             setStep(2);
             setError('');
         } catch (err) {
-            setError(err.response?.data || 'Failed to send OTP');
+            setError(err.response?.data?.message || 'Failed to send OTP');
         } finally {
             setLoading(false);
         }
     };
 
     const handleResetPassword = async () => {
+        // Validate inputs
+        if (!otp) {
+            setError('OTP is required');
+            return;
+        }
+        if (!newPassword || newPassword.length < 8) {
+            setError('Password must be at least 8 characters long');
+            return;
+        }
+
         setError('');
         setLoading(true);
         try {
-            await axios.post(`${BASE_URL}/reset-password`, {
+            const response = await axios.post(`${BASE_URL}/reset-password`, {
                 email,
                 otp,
                 newPassword
             });
-            setStep(3); // Optional: add a success screen
+            setStep(3);
             setError('');
         } catch (err) {
-            setError(err.response?.data || 'Failed to reset password');
+            setError(err.response?.data?.message || 'Failed to reset password');
         } finally {
             setLoading(false);
         }
