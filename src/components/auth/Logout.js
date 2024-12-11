@@ -7,16 +7,13 @@ const Logout = () => {
     const [showAlert, setShowAlert] = useState(true);
 
     useEffect(() => {
-        // Clear authentication tokens and user info
         localStorage.removeItem('token');
         localStorage.removeItem('user');
 
-        // Redirect to login page after a short delay
         const timer = setTimeout(() => {
             navigate('/login');
         }, 3000);
 
-        // Cleanup the timer if component unmounts
         return () => clearTimeout(timer);
     }, [navigate]);
 

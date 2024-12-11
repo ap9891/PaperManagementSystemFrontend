@@ -10,16 +10,13 @@ const PaperOutModal = ({ isOpen, onClose }) => {
   const [selectedReel, setSelectedReel] = useState(null);
   const [outQuantity, setOutQuantity] = useState("");
 
-  // State for reels and history
   const [reels, setReels] = useState([]);
   const [history, setHistory] = useState([]);
 
-  // Loading and error states
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // Fetch reels and history on component mount
   useEffect(() => {
     if (isOpen) {
       fetchReels();
@@ -84,7 +81,7 @@ const PaperOutModal = ({ isOpen, onClose }) => {
       if (query) {
         searchReels(query);
       } else {
-        fetchReels(); // Reset to full list if search is empty
+        fetchReels();
       }
     }, 300);
 
@@ -107,8 +104,9 @@ const PaperOutModal = ({ isOpen, onClose }) => {
       fetchReels();
       fetchHistory();
 
-      // Set success message
-      setSuccessMessage(`Successfully stocked out ${outQuantity} from reel ${selectedReel.reelNumber}`);
+      setSuccessMessage(
+        `Successfully stocked out ${outQuantity} from reel ${selectedReel.reelNumber}`
+      );
 
       setSelectedReel(null);
       setOutQuantity("");
@@ -123,7 +121,6 @@ const PaperOutModal = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle reel double click
   const handleReelDoubleClick = (reel) => {
     setSelectedReel(reel);
   };
@@ -132,22 +129,15 @@ const PaperOutModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="modal-overlay">
-      {/* Render Alert for success messages */}
       {successMessage && (
-        <Alert 
-          type="success" 
-          message={successMessage} 
-          onClose={() => setSuccessMessage(null)} 
+        <Alert
+          type="success"
+          message={successMessage}
+          onClose={() => setSuccessMessage(null)}
         />
       )}
-
-      {/* Render Alert for error messages */}
       {error && (
-        <Alert 
-          type="error" 
-          message={error} 
-          onClose={() => setError(null)} 
-        />
+        <Alert type="error" message={error} onClose={() => setError(null)} />
       )}
 
       <div className="modal-content">
@@ -160,9 +150,6 @@ const PaperOutModal = ({ isOpen, onClose }) => {
         <div className="modal-header">
           <h2>Paper Out Management</h2>
         </div>
-
-        {/* Remove old error display as it's now handled by Alert */}
-        {/* {error && <div className="error-message">{error}</div>} */}
 
         {isLoading && <div className="loading-spinner">Loading...</div>}
 
@@ -181,7 +168,6 @@ const PaperOutModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Rest of the code remains the same */}
         {activeTab === "reel-out" ? (
           <div className="form-content">
             <div className="search-container">
@@ -285,7 +271,6 @@ const PaperOutModal = ({ isOpen, onClose }) => {
                         if (value >= 0) {
                           setOutQuantity(value);
                         } else {
-                          // Replace alert with our new Alert component
                           setError("Quantity must be a positive value.");
                         }
                       }}

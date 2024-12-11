@@ -1,8 +1,6 @@
-/* Dashboard.css */
-
 /* Top Navigation */
 .navbar {
-    background-color: #070708; /* Indigo-600 */
+    background-color: #070708; 
     color: white;
     padding: 16px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -26,31 +24,28 @@
     background-color: #6b6a71;
   }
   
-  /* Main Content */
   .main-content {
     background-color: #fefefe;
     min-height: calc(100vh - 64px);
     padding: 40px;
   }
-  
-  /* Date Display */
+
   .date-display {
-    background-color: #e5e7eb; /* Gray-200 */
+    background-color: #e5e7eb;
     display: inline-block;
     padding: 10px 16px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    color: #4b5563; /* Gray-600 */
+    color: #4b5563; 
     font-size: 14px;
     margin-left: 156px;
   }
   
-  /* Title */
   .main-title {
     text-align: center;
     font-size: 40px;
     font-weight: bold;
-    color: #374151; /* Gray-700 */
+    color: #374151; 
     margin: 40px 0;
   }
   
@@ -65,7 +60,7 @@
   }
   
   .buttons-grid a {
-    background-color: #4f46e5; /* Indigo-500 */
+    background-color: #4f46e5;
     color: white;
     padding: 24px;
     text-align: center;
@@ -76,7 +71,7 @@
   }
   
   .buttons-grid a:hover {
-    background-color: #4338ca; /* Indigo-600 */
+    background-color: #4338ca;
     transform: scale(1.05);
   }
 

@@ -41,10 +41,7 @@ const Dashboard = () => {
           </div>
         </div>
       </nav>
-
-      {/* Main Content Area */}
       <div className="main-content">
-        {/* Date Display */}
         <div className="date-display">
           <div>
             {new Date().toLocaleString("en-US", {
@@ -59,11 +56,7 @@ const Dashboard = () => {
             })}
           </div>
         </div>
-
-        {/* Title */}
         <h1 className="main-title">Fantasy Packaging Private Limited</h1>
-
-        {/* Action Buttons Grid */}
         <div className="buttons-grid">
           <Link to="/paper-raw">Paper Raw Material</Link>
 

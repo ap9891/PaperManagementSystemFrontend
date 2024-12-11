@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { ShadeMasterService } from './ShadeMasterService';
-import NavigationPaper from '../navbar/NavbarPaper';
-import Alert from '../Alert/Alert';
-import './ShadeMaster.css';
+import React, { useState, useEffect } from "react";
+import { ShadeMasterService } from "./ShadeMasterService";
+import NavigationPaper from "../navbar/NavbarPaper";
+import Alert from "../Alert/Alert";
+import "./ShadeMaster.css";
 
 const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
   const [formData, setFormData] = useState({
-    shadeName: '',
-    shadeId: (lastShadeId + 1).toString()
+    shadeName: "",
+    shadeId: (lastShadeId + 1).toString(),
   });
 
   const [errors, setErrors] = useState({});
@@ -17,12 +17,12 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
     if (editingShade) {
       setFormData({
         shadeName: editingShade.shadeName,
-        shadeId: editingShade.shadeId
+        shadeId: editingShade.shadeId,
       });
     } else {
       setFormData({
-        shadeName: '',
-        shadeId: (lastShadeId + 1).toString()
+        shadeName: "",
+        shadeId: (lastShadeId + 1).toString(),
       });
     }
   }, [editingShade, lastShadeId]);
@@ -30,8 +30,8 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
   const validateField = (name, value) => {
     const newErrors = { ...errors };
 
-    if (name === 'shadeName' && !value.trim()) {
-      newErrors[name] = 'Shade Name is required';
+    if (name === "shadeName" && !value.trim()) {
+      newErrors[name] = "Shade Name is required";
     } else {
       delete newErrors[name];
     }
@@ -42,37 +42,40 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
   };
 
   const handleSave = async () => {
-    const isValid = validateField('shadeName', formData.shadeName);
+    const isValid = validateField("shadeName", formData.shadeName);
 
     if (isValid) {
       try {
         if (editingShade) {
           await ShadeMasterService.updateShade(formData.shadeId, formData);
-          setAlert({ type: 'success', message: 'Shade updated successfully!' });
+          setAlert({ type: "success", message: "Shade updated successfully!" });
         } else {
           await ShadeMasterService.createShade(formData);
-          setAlert({ type: 'success', message: 'Shade saved successfully!' });
+          setAlert({ type: "success", message: "Shade saved successfully!" });
           setFormData({
-            shadeName: '',
-            shadeId: ((parseInt(formData.shadeId) || 0) + 1).toString()
+            shadeName: "",
+            shadeId: ((parseInt(formData.shadeId) || 0) + 1).toString(),
           });
         }
         onSave(formData);
       } catch (error) {
-        setAlert({ type: 'error', message: 'Error saving shade: ' + error.message });
+        setAlert({
+          type: "error",
+          message: "Error saving shade: " + error.message,
+        });
       }
     }
   };
 
   const handleCancel = () => {
     setFormData({
-      shadeName: '',
-      shadeId: (lastShadeId + 1).toString()
+      shadeName: "",
+      shadeId: (lastShadeId + 1).toString(),
     });
     setErrors({});
   };
@@ -80,19 +83,21 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg mx-auto mt-16 paper-box-mill shade-form-card">
       {alert && (
-        <Alert 
-          type={alert.type} 
-          message={alert.message} 
-          onClose={() => setAlert(null)} 
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert(null)}
         />
       )}
       <h2 className="text-2xl font-bold text-gray-800 heading-paper-master-mill card-header-mill">
-        {editingShade ? 'Update Shade' : 'Add Shade Master'}
+        {editingShade ? "Update Shade" : "Add Shade Master"}
       </h2>
 
       <div className="space-y-4">
         <div className="flex items-center space-x-2">
-          <label className="w-32 font-semibold text-gray-700 input-fiel-name-paper1">Shade Name</label>
+          <label className="w-32 font-semibold text-gray-700 input-fiel-name-paper1">
+            Shade Name
+          </label>
           <input
             type="text"
             name="shadeName"
@@ -107,7 +112,9 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <label className="w-32 font-semibold text-gray-700 input-fiel-name-paper2">Shade ID</label>
+          <label className="w-32 font-semibold text-gray-700 input-fiel-name-paper2">
+            Shade ID
+          </label>
           <input
             type="text"
             value={formData.shadeId}
@@ -128,7 +135,7 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
             disabled={Object.keys(errors).length > 0}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300 button-save-mill"
           >
-            {editingShade ? 'Update' : 'Save'}
+            {editingShade ? "Update" : "Save"}
           </button>
         </div>
       </div>
@@ -137,9 +144,9 @@ const ShadeForm = ({ onSave, lastShadeId, editingShade }) => {
 };
 
 const ShadeList = ({ shades, onUpdate, onDelete }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredShades = shades.filter(shade =>
+  const filteredShades = shades.filter((shade) =>
     shade.shadeName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -175,8 +182,12 @@ const ShadeList = ({ shades, onUpdate, onDelete }) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredShades.map((shade) => (
                 <tr key={shade.shadeId}>
-                  <td className="px-6 py-4 whitespace-nowrap">{shade.shadeName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{shade.shadeId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {shade.shadeName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {shade.shadeId}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap actions">
                     <button
                       onClick={() => onUpdate(shade)}
@@ -213,8 +224,11 @@ const ShadeMasterPage = () => {
         const fetchedShades = await ShadeMasterService.getAllShades();
         setShades(fetchedShades);
       } catch (error) {
-        setAlert({ type: 'error', message: 'Error fetching shades: ' + error.message });
-        console.error('Error fetching shades:', error);
+        setAlert({
+          type: "error",
+          message: "Error fetching shades: " + error.message,
+        });
+        console.error("Error fetching shades:", error);
       }
     };
 
@@ -222,10 +236,12 @@ const ShadeMasterPage = () => {
   }, []);
 
   const handleSave = (formData) => {
-    const updatedShades = editingShade 
-      ? shades.map(shade => shade.shadeId === editingShade.shadeId ? formData : shade)
+    const updatedShades = editingShade
+      ? shades.map((shade) =>
+          shade.shadeId === editingShade.shadeId ? formData : shade
+        )
       : [...shades, formData];
-    
+
     setShades(updatedShades);
     setEditingShade(null);
   };
@@ -235,13 +251,16 @@ const ShadeMasterPage = () => {
   };
 
   const handleDelete = async (shadeId) => {
-    if (window.confirm('Are you sure you want to delete this shade?')) {
+    if (window.confirm("Are you sure you want to delete this shade?")) {
       try {
         await ShadeMasterService.deleteShade(shadeId);
-        setShades(prev => prev.filter(shade => shade.shadeId !== shadeId));
-        setAlert({ type: 'success', message: 'Shade deleted successfully!' });
+        setShades((prev) => prev.filter((shade) => shade.shadeId !== shadeId));
+        setAlert({ type: "success", message: "Shade deleted successfully!" });
       } catch (error) {
-        setAlert({ type: 'error', message: 'Error deleting shade: ' + error.message });
+        setAlert({
+          type: "error",
+          message: "Error deleting shade: " + error.message,
+        });
       }
     }
   };
@@ -251,15 +270,18 @@ const ShadeMasterPage = () => {
       <NavigationPaper />
       <div className="p-4 pt-20 min-h-screen bg-gray-50">
         {alert && (
-          <Alert 
-            type={alert.type} 
-            message={alert.message} 
-            onClose={() => setAlert(null)} 
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            onClose={() => setAlert(null)}
           />
         )}
         <ShadeForm
           onSave={handleSave}
-          lastShadeId={Math.max(...shades.map(s => parseInt(s.shadeId) || 0), 0)}
+          lastShadeId={Math.max(
+            ...shades.map((s) => parseInt(s.shadeId) || 0),
+            0
+          )}
           editingShade={editingShade}
         />
         <ShadeList

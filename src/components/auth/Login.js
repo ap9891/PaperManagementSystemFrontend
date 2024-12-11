@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Alert from '../Alert/Alert';
+import Alert from "../Alert/Alert";
 import './Login.css';
 
 const Login = () => {
@@ -49,27 +49,23 @@ const Login = () => {
                 throw new Error(data.message || 'Login failed');
             }
     
-            // Store token and user info securely
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify({ 
                 email: data.email,
                 loggedInAt: new Date().toISOString()
             }));
             
-            // Show success alert
             setAlert({
                 type: 'success',
                 message: 'Login successful! Redirecting to dashboard...'
             });
             
-            // Redirect to dashboard after a short delay
             setTimeout(() => {
                 navigate('/dashboard');
             }, 2000);
 
         } catch (error) {
             console.error('Login error:', error);
-            // Show error alert
             setAlert({
                 type: 'error',
                 message: error.message || 'Login failed. Please try again.'

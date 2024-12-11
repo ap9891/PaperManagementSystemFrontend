@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import NavigationPaper from '../navbar/NavbarPaper';
-import axios from 'axios';
-import './millMaster.css';
-// import Alert from './Alert'; // Import the new Alert component
-import Alert from '../Alert/Alert';
+import React, { useState, useEffect } from "react";
+import NavigationPaper from "../navbar/NavbarPaper";
+import axios from "axios";
+import "./millMaster.css";
+import Alert from "../Alert/Alert";
 
-// API base URL - consider moving to environment config
-const API_BASE_URL = 'http://localhost:9090/api/mills';
+const API_BASE_URL = "http://localhost:9090/api/mills";
 
-const MillMasterForm = ({ onSave, editingMill }) => {
+const MillMasterForm = ({ onSave, editingMill, setAlert }) => {
   const [formData, setFormData] = useState({
-    millName: '',
-    millId: ''
+    millName: "",
+    millId: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -20,21 +18,20 @@ const MillMasterForm = ({ onSave, editingMill }) => {
   useEffect(() => {
     const initializeForm = async () => {
       if (editingMill) {
-        // When editing an existing mill, use its details
         setFormData({
           millName: editingMill.millName,
-          millId: editingMill.millId
+          millId: editingMill.millId,
         });
       } else {
-        // Always fetch a new mill ID when adding a new mill
         try {
           const response = await axios.get(`${API_BASE_URL}/next-id`);
           setFormData({
-            millName: '',
-            millId: response.data
+            millName: "",
+            millId: response.data,
           });
         } catch (error) {
-          console.error('Error fetching next mill ID:', error);
+          console.error("Error fetching next mill ID:", error);
+          setAlert({ type: "error", message: "Failed to fetch next Mill ID" });
         }
       }
     };
@@ -47,7 +44,7 @@ const MillMasterForm = ({ onSave, editingMill }) => {
     if (editingMill) {
       setFormData({
         millName: editingMill.millName,
-        millId: editingMill.millId
+        millId: editingMill.millId,
       });
     }
   }, [editingMill]);
@@ -55,8 +52,8 @@ const MillMasterForm = ({ onSave, editingMill }) => {
   const validateField = (name, value) => {
     const newErrors = { ...errors };
 
-    if (name === 'millName' && !value.trim()) {
-      newErrors.millName = 'Mill Name is required & >=3';
+    if (name === "millName" && !value.trim()) {
+      newErrors.millName = "Mill Name is required & >=3";
     } else {
       delete newErrors.millName;
     }
@@ -67,12 +64,12 @@ const MillMasterForm = ({ onSave, editingMill }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
   };
 
   const handleSave = async () => {
-    const isValid = validateField('millName', formData.millName);
+    const isValid = validateField("millName", formData.millName);
 
     if (isValid) {
       try {
@@ -80,19 +77,22 @@ const MillMasterForm = ({ onSave, editingMill }) => {
         const response = await axios.post(API_BASE_URL, formData);
         onSave(response.data);
         
-        // Reset form or prepare for next entry
         if (!editingMill) {
           const nextIdResponse = await axios.get(`${API_BASE_URL}/next-id`);
           setFormData({
-            millName: '',
-            millId: nextIdResponse.data
+            millName: "",
+            millId: nextIdResponse.data,
           });
+          setAlert({ type: "success", message: "Mill Master saved successfully!" });
+        } else {
+          setAlert({ type: "success", message: "Mill updated successfully!" });
         }
-
-        return editingMill ? 'Mill updated successfully!' : 'Mill Master saved successfully!';
       } catch (error) {
-        console.error('Error saving mill:', error);
-        throw new Error('Failed to save mill. Please try again.');
+        console.error("Error saving mill:", error);
+        setAlert({ 
+          type: "error", 
+          message: error.response?.data?.message || "Failed to save mill. Please try again." 
+        });
       } finally {
         setIsLoading(false);
       }
@@ -104,24 +104,27 @@ const MillMasterForm = ({ onSave, editingMill }) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/next-id`);
       setFormData({
-        millName: '',
-        millId: response.data
+        millName: "",
+        millId: response.data,
       });
       setErrors({});
     } catch (error) {
-      console.error('Error fetching next mill ID:', error);
+      console.error("Error fetching next mill ID:", error);
+      setAlert({ type: "error", message: "Failed to fetch next Mill ID" });
     }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg mx-auto mt-16 paper-box-mill shade-form-card">
       <h2 className="text-2xl font-bold text-gray-800 heading-paper-master-mill card-header-mill">
-        {editingMill ? 'Update Mill' : 'Add Mill Master'}
+        {editingMill ? "Update Mill" : "Add Mill Master"}
       </h2>
 
       <div className="space-y-4">
         <div className="flex items-center space-x-2">
-          <label className="w-32 font-semibold text-gray-700 input-fiel-name-mill">Mill Name</label>
+          <label className="w-32 font-semibold text-gray-700 input-fiel-name-mill">
+            Mill Name
+          </label>
           <input
             type="text"
             name="millName"
@@ -136,7 +139,9 @@ const MillMasterForm = ({ onSave, editingMill }) => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <label className="w-32 font-semibold text-gray-700 input-fiel-name-paper2">Mill ID</label>
+          <label className="w-32 font-semibold text-gray-700 input-fiel-name-paper2">
+            Mill ID
+          </label>
           <input
             type="text"
             value={formData.millId}
@@ -158,7 +163,7 @@ const MillMasterForm = ({ onSave, editingMill }) => {
             disabled={Object.keys(errors).length > 0 || isLoading}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300 button-save-mill"
           >
-            {editingMill ? 'Update' : 'Save'}
+            {editingMill ? "Update" : "Save"}
           </button>
         </div>
       </div>
@@ -167,9 +172,9 @@ const MillMasterForm = ({ onSave, editingMill }) => {
 };
 
 const MillList = ({ mills, onUpdate, onDelete }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredMills = mills.filter(mill =>
+  const filteredMills = mills.filter((mill) =>
     mill.millName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -205,7 +210,9 @@ const MillList = ({ mills, onUpdate, onDelete }) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredMills.map((mill) => (
                 <tr key={mill.millId}>
-                  <td className="px-6 py-4 whitespace-nowrap">{mill.millName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {mill.millName}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">{mill.millId}</td>
                   <td className="px-6 py-4 whitespace-nowrap actions">
                     <button
@@ -245,40 +252,26 @@ const MillMasterPage = () => {
         setMills(response.data);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching mills:', error);
+        console.error("Error fetching mills:", error);
         setIsLoading(false);
-        setAlert({ type: 'error', message: 'Failed to fetch mills' });
+        setAlert({ type: "error", message: "Failed to fetch mills" });
       }
     };
 
     fetchMills();
   }, []);
 
-  const handleSave = async (mill) => {
-    try {
-      const message = await handleSaveAttempt(mill);
-      setAlert({ type: 'success', message });
-    } catch (error) {
-      setAlert({ type: 'error', message: error.message });
-    }
-  };
-
-  const handleSaveAttempt = async (mill) => {
+  const handleSave = (mill) => {
     if (editingMill) {
-      // Update existing mill
-      setMills(prev => prev.map(m => 
-        m.millId === mill.millId ? mill : m
-      ));
+      setMills((prev) =>
+        prev.map((m) => (m.millId === mill.millId ? mill : m))
+      );
       setEditingMill(null);
-      return 'Mill updated successfully!';
     } else {
-      // Add new mill, ensuring no duplicates
-      setMills(prev => {
-        // Check if mill already exists to prevent duplicates
-        const exists = prev.some(m => m.millId === mill.millId);
+      setMills((prev) => {
+        const exists = prev.some((m) => m.millId === mill.millId);
         return exists ? prev : [...prev, mill];
       });
-      return 'Mill Master saved successfully!';
     }
   };
 
@@ -287,14 +280,17 @@ const MillMasterPage = () => {
   };
 
   const handleDelete = async (millId) => {
-    if (window.confirm('Are you sure you want to delete this mill?')) {
+    if (window.confirm("Are you sure you want to delete this mill?")) {
       try {
         await axios.delete(`${API_BASE_URL}/${millId}`);
-        setMills(prev => prev.filter(mill => mill.millId !== millId));
-        setAlert({ type: 'success', message: 'Mill deleted successfully!' });
+        setMills((prev) => prev.filter((mill) => mill.millId !== millId));
+        setAlert({ type: "success", message: "Mill deleted successfully!" });
       } catch (error) {
-        console.error('Error deleting mill:', error);
-        setAlert({ type: 'error', message: 'Failed to delete mill. Please try again.' });
+        console.error("Error deleting mill:", error);
+        setAlert({
+          type: "error",
+          message: "Failed to delete mill. Please try again.",
+        });
       }
     }
   };
@@ -307,16 +303,17 @@ const MillMasterPage = () => {
     <>
       <NavigationPaper />
       {alert && (
-        <Alert 
+        <Alert
           type={alert.type}
           message={alert.message}
           onClose={() => setAlert(null)}
         />
       )}
       <div className="p-4 pt-20 min-h-screen bg-gray-50">
-        <MillMasterForm
-          onSave={handleSave}
-          editingMill={editingMill}
+        <MillMasterForm 
+          onSave={handleSave} 
+          editingMill={editingMill} 
+          setAlert={setAlert} 
         />
         <MillList
           mills={mills}

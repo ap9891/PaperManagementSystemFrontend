@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./PaperPurchase.css";
+import "./inventory.css";
 
 const InventoryModal = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,9 +18,8 @@ const InventoryModal = ({ isOpen, onClose }) => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch all or recent inventory items if no search query
       const response = await axios.get("/api/inventory/search", {
-        params: { searchTerm: "" }
+        params: { searchTerm: "" },
       });
       setInventoryData(response.data);
     } catch (err) {
@@ -41,7 +40,7 @@ const InventoryModal = ({ isOpen, onClose }) => {
     setError(null);
     try {
       const response = await axios.get("/api/inventory/search", {
-        params: { searchTerm: query }
+        params: { searchTerm: query },
       });
       setInventoryData(response.data);
     } catch (err) {
@@ -56,7 +55,6 @@ const InventoryModal = ({ isOpen, onClose }) => {
     const query = e.target.value;
     setSearchQuery(query);
 
-    // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(() => {
       handleSearch(query);
     }, 300);
@@ -88,7 +86,6 @@ const InventoryModal = ({ isOpen, onClose }) => {
           <h2>Inventory Management</h2>
         </div>
 
-        {/* Search Container */}
         <div className="search-container mb-4">
           <input
             type="text"
@@ -99,11 +96,9 @@ const InventoryModal = ({ isOpen, onClose }) => {
           />
         </div>
 
-        {/* Loading and Error States */}
         {loading && <p className="text-center text-blue-500">Loading...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
 
-        {/* Table */}
         <div className="table-container">
           <table>
             <thead>
@@ -143,11 +138,7 @@ const InventoryModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className="button-group">
-          <button
-            type="button"
-            className="button secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="button secondary" onClick={onClose}>
             Close
           </button>
         </div>

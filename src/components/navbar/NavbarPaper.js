@@ -42,8 +42,7 @@ const Navigation = () => {
             </Link>
           </div>
           <div>
-            <Link to="/logout"
-            className="logout">
+            <Link to="/logout" className="logout">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
