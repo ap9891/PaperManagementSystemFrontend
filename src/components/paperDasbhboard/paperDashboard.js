@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./paperDashboard.css";
 import Navigation from "../navbar/Navbar";
@@ -10,6 +10,17 @@ const PaperDashboard = () => {
   const [isPaperModalOpen, setIsPaperModalOpen] = useState(false);
   const [isPaperOutModalOpen, setIsPaperOutModalOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    // Update time every second
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   const handlePaperInClick = (e) => {
     e.preventDefault();
@@ -35,7 +46,7 @@ const PaperDashboard = () => {
       <div className="main-content">
         <div className="date-display">
           <div>
-            {new Date().toLocaleString("en-US", {
+            {currentTime.toLocaleString("en-US", {
               weekday: "long",
               year: "numeric",
               month: "long",

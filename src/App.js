@@ -9,6 +9,9 @@ import ShadeMasterPage from "./components/shade/ShadeMaster";
 import PaperMasterFind from "./components/paper/PaperMaster";
 import PaperDashboard from "./components/paperDasbhboard/paperDashboard";
 import Logout from "./components/auth/Logout";
+import PolytheneRawMaterial from "./components/polythene/PolytheneRawMaterial";
+import DisposablePlates from "./components/DisposablePlates/DisposabePlates";
+import Store from "./components/Store/Store";
 
 const App = () => {
   return (
@@ -26,6 +29,9 @@ const App = () => {
           <Route path="/shade-master" element={<ShadeMasterPage />} />
           <Route path="/master" element={<PaperMasterFind />} />
           <Route path="/paper-raw" element={<PaperDashboard />} />
+          <Route path="/polythene-raw" element={<PolytheneRawMaterial />} />
+          <Route path="/disposable-plates" element={<DisposablePlates />} />
+          <Route path="/store" element={<Store />} />
           <Route path="/logout" element={<Logout />} />
         </Route>
 

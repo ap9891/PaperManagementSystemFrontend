@@ -3,10 +3,9 @@ import axios from "axios";
 import "./paperMaster.css";
 import NavigationPaper from "../navbar/NavbarPaper";
 import Alert from "../Alert/Alert";
+import API_ENDPOINTS from "../../config/config";
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL ||
-  "http://localhost:9090/api/paper-master";
+const API_BASE_URL = API_ENDPOINTS.PAPER;
 
 const PaperMasterForm = ({
   onSave,

@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./dashboard.css";
+
 const Dashboard = () => {
   const location = useLocation();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    // Update time every second
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   if (
     location.pathname === "/login" ||
@@ -18,8 +30,7 @@ const Dashboard = () => {
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
             <div className="space-x-4">
-              <Link to="/logout"
-              className="logout-dashboard">
+              <Link to="/logout" className="logout-dashboard">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -44,7 +55,7 @@ const Dashboard = () => {
       <div className="main-content">
         <div className="date-display">
           <div>
-            {new Date().toLocaleString("en-US", {
+            {currentTime.toLocaleString("en-US", {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -59,11 +70,8 @@ const Dashboard = () => {
         <h1 className="main-title">Fantasy Packaging Private Limited</h1>
         <div className="buttons-grid">
           <Link to="/paper-raw">Paper Raw Material</Link>
-
           <Link to="/polythene-raw">Polythene Raw Material</Link>
-
           <Link to="/disposable-plates">Disposable Plates</Link>
-
           <Link to="/store">Store</Link>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Alert from "../Alert/Alert";
+import API_ENDPOINTS from '../../config/config';
 import './Login.css';
 
 const Login = () => {
@@ -30,7 +31,7 @@ const Login = () => {
         setAlert(null);
     
         try {
-            const response = await fetch('http://localhost:9090/api/auth/login', {
+            const response = await fetch(API_ENDPOINTS.LOGIN, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -110,9 +111,9 @@ const Login = () => {
             </form>
             <div style={{ marginTop: '1rem', textAlign: 'center' }}>
                 <p style={{ fontSize: '0.9rem', color: '#666' }}>
-                    Test credentials:<br/>
+                    {/* Test credentials:<br/>
                     Email: admin@example.com<br/>
-                    Password: admin123
+                    Password: admin123 */}
                 </p>
             </div>
             <a href="/forgot-password" className="forgot-password">Forgot Password?</a>
